@@ -1,12 +1,13 @@
 import { useEffect, useRef } from "react";
-import { fabric } from "fabric";
+//import { fabric } from "fabric";
+
+const { fabric } = window;
 
 export default function App() {
   const canvasEl = useRef(null);
   const fabricCanvas = useRef(null);
   const fileInputRef = useRef(null);
   const colorInputRef = useRef(null);
-  const { fabric } = window;
 
   // init fabric canvas
   useEffect(() => {
