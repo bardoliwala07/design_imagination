@@ -6,6 +6,7 @@ export default function App() {
   const fabricCanvas = useRef(null);
   const fileInputRef = useRef(null);
   const colorInputRef = useRef(null);
+  const { fabric } = window;
 
   // init fabric canvas
   useEffect(() => {
