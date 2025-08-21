@@ -15,7 +15,24 @@ export default function App() {
       selection: true,
     });
     fabricCanvas.current = canvas;
-    return () => canvas.dispose();
+
+    // handle Delete key
+    const handleKeyDown = (e) => {
+      if (e.key === "Delete" || e.key === "Backspace") {
+        const active = canvas.getActiveObjects();
+        if (active.length) {
+          active.forEach((obj) => canvas.remove(obj));
+          canvas.discardActiveObject();
+          canvas.requestRenderAll();
+        }
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      canvas.dispose();
+    };
+
   }, []);
 
   // helpers
@@ -158,7 +175,7 @@ const addVideoSnapshot = (url) => {
     a.click();
   };
 
-  // 🟢 Change color of selected shape/text
+  //  Change color of selected shape/text
   const changeColor = (e) => {
     const c = fabricCanvas.current;
     const obj = c.getActiveObject();
@@ -221,7 +238,7 @@ const addVideoSnapshot = (url) => {
             Add Video Snapshot
           </button>
 
-          {/* 🟢 Color Picker */}
+          {/*  Color Picker */}
           <label style={{ fontSize: 14, marginTop: 8 }}>Change Color:</label>
           <input
             ref={colorInputRef}
