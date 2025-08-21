@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import { fabric } from "fabric";
+//import { fabric } from "fabric";
+import * as fabric from "fabric";
 
 export default function App() {
   const canvasEl = useRef(null);
