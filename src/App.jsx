@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { fabric } from "fabric";
 
 export default function App() {
   const canvasEl = useRef(null);
@@ -6,25 +7,19 @@ export default function App() {
   const fileInputRef = useRef(null);
   const colorInputRef = useRef(null);
 
-  // ✅ init fabric safely
+  // init fabric canvas
   useEffect(() => {
-    if (typeof window !== "undefined" && window.fabric) {
-      const { fabric } = window;
-
-      const canvas = new fabric.Canvas(canvasEl.current, {
-        backgroundColor: "#ffffff",
-        preserveObjectStacking: true,
-        selection: true,
-      });
-      fabricCanvas.current = canvas;
-
-      return () => canvas.dispose();
-    }
+    const canvas = new fabric.Canvas(canvasEl.current, {
+      backgroundColor: "#ffffff",
+      preserveObjectStacking: true,
+      selection: true,
+    });
+    fabricCanvas.current = canvas;
+    return () => canvas.dispose();
   }, []);
 
-  // ✅ Helpers
+  // helpers
   const addRect = () => {
-    const { fabric } = window;
     const c = fabricCanvas.current;
     const rect = new fabric.Rect({
       left: 50,
@@ -40,7 +35,6 @@ export default function App() {
   };
 
   const addCircle = () => {
-    const { fabric } = window;
     const c = fabricCanvas.current;
     const circle = new fabric.Circle({
       left: 120,
@@ -53,7 +47,6 @@ export default function App() {
   };
 
   const addText = () => {
-    const { fabric } = window;
     const c = fabricCanvas.current;
     const text = new fabric.IText("Double-click to edit", {
       left: 80,
@@ -68,7 +61,6 @@ export default function App() {
   };
 
   const onChooseImage = (e) => {
-    const { fabric } = window;
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -91,35 +83,38 @@ export default function App() {
     e.target.value = "";
   };
 
-  const addVideoSnapshot = (url) => {
-    const { fabric } = window;
-    const c = fabricCanvas.current;
-    const videoEl = document.createElement("video");
-    videoEl.src = url;
-    videoEl.crossOrigin = "anonymous";
-    videoEl.playsInline = true;
-    videoEl.muted = true;
-    videoEl.currentTime = 0; // first frame
+ 
+const addVideoSnapshot = (url) => {
+  const c = fabricCanvas.current;
+  const videoEl = document.createElement("video");
+  videoEl.src = url;
+  videoEl.crossOrigin = "anonymous";
+  videoEl.playsInline = true;
+  videoEl.muted = true;
+  videoEl.currentTime = 0; // first frame
 
-    videoEl.addEventListener("loadeddata", () => {
-      const tempCanvas = document.createElement("canvas");
-      tempCanvas.width = videoEl.videoWidth;
-      tempCanvas.height = videoEl.videoHeight;
-      const ctx = tempCanvas.getContext("2d");
-      ctx.drawImage(videoEl, 0, 0, videoEl.videoWidth, videoEl.videoHeight);
+  videoEl.addEventListener("loadeddata", () => {
+    // temp canvas to capture video frame
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = videoEl.videoWidth;
+    tempCanvas.height = videoEl.videoHeight;
+    const ctx = tempCanvas.getContext("2d");
+    ctx.drawImage(videoEl, 0, 0, videoEl.videoWidth, videoEl.videoHeight);
 
-      const snapshotUrl = tempCanvas.toDataURL("image/png");
+    // get snapshot as dataURL
+    const snapshotUrl = tempCanvas.toDataURL("image/png");
 
-      fabric.Image.fromURL(snapshotUrl, (img) => {
-        const maxW = c.getWidth() * 0.6;
-        const scale = Math.min(1, maxW / img.width);
-        if (scale < 1) img.scale(scale);
-        img.set({ left: 100, top: 100 });
-        c.add(img).setActiveObject(img);
-        c.requestRenderAll();
-      });
+    fabric.Image.fromURL(snapshotUrl, (img) => {
+      const maxW = c.getWidth() * 0.6;
+      const scale = Math.min(1, maxW / img.width);
+      if (scale < 1) img.scale(scale);
+      img.set({ left: 100, top: 100 });
+      c.add(img).setActiveObject(img);
+      c.requestRenderAll();
     });
-  };
+  });
+};
+
 
   const deleteSelected = () => {
     const c = fabricCanvas.current;
@@ -163,6 +158,7 @@ export default function App() {
     a.click();
   };
 
+  // 🟢 Change color of selected shape/text
   const changeColor = (e) => {
     const c = fabricCanvas.current;
     const obj = c.getActiveObject();
@@ -225,6 +221,7 @@ export default function App() {
             Add Video Snapshot
           </button>
 
+          {/* 🟢 Color Picker */}
           <label style={{ fontSize: 14, marginTop: 8 }}>Change Color:</label>
           <input
             ref={colorInputRef}
@@ -243,7 +240,8 @@ export default function App() {
         </div>
 
         <p style={{ fontSize: 12, color: "#6b7280", marginTop: 12 }}>
-          Tip: Select an object and use its corners to resize/rotate. Double-click on text to edit it.
+          Tip: Select an object and use its corners to resize/rotate.{" "}
+          Double-click on text to edit it.
         </p>
       </aside>
 
